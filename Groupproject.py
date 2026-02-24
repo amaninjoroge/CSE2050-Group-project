@@ -36,7 +36,7 @@ class Student: #Mei Mei
     def update_grade(self, course, grade:str):
         self._courses[course] = grade
     
-    def get_gpa(self):
+    def calculate_gpa(self):
         """Compute weighted GPA using course credits."""
         total_points = 0
         total_credits = 0
@@ -51,3 +51,10 @@ class Student: #Mei Mei
             return 0.0
 
         return total_points / total_credits
+    
+    def get_courses(self):
+        return list(self.courses.keys)
+    
+    def get_course_info(self):
+        pass
+    
