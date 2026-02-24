@@ -17,7 +17,28 @@ class Student: #Mei Mei
 
     def enroll(self, course, grade:str): 
         self._courses[course] = grade
+        if self not in course.students:
+            course.students.append(self)
     
+    def update_grade(self, course, grade:str):
+        self._courses[course] = grade
+    
+    def get_gpa(self):
+        """Compute weighted GPA using course credits."""
+        total_points = 0
+        total_credits = 0
+
+        for course, grade in self.courses.items():
+            if grade in Student.GRADE_POINTS:
+                points = Student.GRADE_POINTS[grade]
+                total_points += points * course.credit
+                total_credits += course.credit
+
+        if total_credits == 0:
+            return 0.0
+
+        return total_points / total_credits
+
     
 
     
