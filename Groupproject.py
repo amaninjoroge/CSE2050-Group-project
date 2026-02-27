@@ -5,8 +5,8 @@ class Course: #Amani
         self.credits = int(credits)
         self.students = []
     def add_student(self, student):
-       self.student = student
-       self.student.append(student)
+       if student not in self.students:
+            self.students.append(student)
     def get_student_count(self):
         return len(self.students)
 
@@ -22,19 +22,18 @@ class Student: #Mei Mei
         'F' : 0.0 
     }
     
-    
     def __init__(self, student_id: str, name: str):
         self.student_id = student_id
         self.name = name
         self.courses = {}
 
     def enroll(self, course, grade:str): 
-        self._courses[course] = grade
+        self.courses[course] = grade
         if self not in course.students:
             course.students.append(self)
     
     def update_grade(self, course, grade:str):
-        self._courses[course] = grade
+        self.courses[course] = grade
     
     def calculate_gpa(self):
         """Compute weighted GPA using course credits."""
@@ -44,8 +43,8 @@ class Student: #Mei Mei
         for course, grade in self.courses.items():
             if grade in Student.GRADE_POINTS:
                 points = Student.GRADE_POINTS[grade]
-                total_points += points * course.credit
-                total_credits += course.credit
+                total_points += points * course.credits
+                total_credits += course.credits
 
         if total_credits == 0:
             return 0.0
@@ -53,8 +52,15 @@ class Student: #Mei Mei
         return total_points / total_credits
     
     def get_courses(self):
-        return list(self.courses.keys)
+        return list(self.courses.keys())
     
     def get_course_info(self):
-        pass
+        info = []
+        for course, grade in self.courses.items():
+            info.append({
+                "course code": course.course.code,
+                "credits": course.credit,
+                "grade": grade
+            })
+        return info
     
