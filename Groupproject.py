@@ -4,13 +4,12 @@ class Course: #Amani
         self.course_code = str(course_code)
         self.credits = int(credits)
         self.students = []
-
     def add_student(self, student):
-       self.student = student
-       self.student.append(student)
-       
+       if student not in self.students:
+            self.students.append(student)
     def get_student_count(self):
         return len(self.students)
+
 
 class Student: #Mei Mei
     """A class to respresent an student and their courses with grades"""
@@ -29,5 +28,39 @@ class Student: #Mei Mei
         self.courses = {}
 
     def enroll(self, course, grade:str): 
-        self._courses[course] = grade
+        self.courses[course] = grade
+        if self not in course.students:
+            course.students.append(self)
+    
+    def update_grade(self, course, grade:str):
+        self.courses[course] = grade
+    
+    def calculate_gpa(self):
+        """Compute weighted GPA using course credits."""
+        total_points = 0
+        total_credits = 0
+
+        for course, grade in self.courses.items():
+            if grade in Student.GRADE_POINTS:
+                points = Student.GRADE_POINTS[grade]
+                total_points += points * course.credits
+                total_credits += course.credits
+
+        if total_credits == 0:
+            return 0.0
+
+        return total_points / total_credits
+    
+    def get_courses(self):
+        return list(self.courses.keys())
+    
+    def get_course_info(self):
+        info = []
+        for course, grade in self.courses.items():
+            info.append({
+                "course code": course.course.code,
+                "credits": course.credit,
+                "grade": grade
+            })
+        return info
 
