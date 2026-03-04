@@ -4,11 +4,11 @@ from Groupproject import Course, Student, University
 class TestCourse(unittest.TestCase):
 
     def setUp(self):
-        self.course = Course("CSE1010", 3, [])
+        self.course = Course("CSE1010", 3)
         self.student = Student("STU00001", "Mei")
 
     def test_course_creation(self):
-        self.assertEqual(self.course.course_code, "CS1010")
+        self.assertEqual(self.course.course_code, "CSE1010")
         self.assertEqual(self.course.credits, 3)
         self.assertEqual(self.course.students, [])
 
@@ -19,7 +19,7 @@ class TestCourse(unittest.TestCase):
     def test_no_duplicate_students(self):
         self.course.add_student(self.student)
         self.course.add_student(self.student)
-        self.assertEqual(self.course.students.count(self.student), 1)
+        self.assertEqual(len(self.course.students), 1)
 
     def test_student_count(self):
         s2 = Student("S2", "Amani")
@@ -27,14 +27,12 @@ class TestCourse(unittest.TestCase):
         self.course.add_student(s2)
         self.assertEqual(self.course.get_student_count(), 2)
 
-# Student test
-
 class TestStudent(unittest.TestCase):
 
     def setUp(self):
         self.student = Student("S1", "Mei")
-        self.course1 = Course("CS101", 3, [])
-        self.course2 = Course("MATH101", 4, [])
+        self.course1 = Course("CS101", 3)
+        self.course2 = Course("MATH101", 4)
 
     def test_student_creation(self):
         self.assertEqual(self.student.student_id, "S1")
@@ -47,8 +45,8 @@ class TestStudent(unittest.TestCase):
         self.assertIn(self.student, self.course1.students)
 
     def test_gpa_calculation(self):
-        self.student.enroll(self.course1, "A")  # 4.0 * 3
-        self.student.enroll(self.course2, "B")  # 3.0 * 4
+        self.student.enroll(self.course1, "A")
+        self.student.enroll(self.course2, "B")
 
         expected = ((4.0 * 3) + (3.0 * 4)) / 7
         self.assertAlmostEqual(self.student.calculate_gpa(), expected)
@@ -57,17 +55,6 @@ class TestStudent(unittest.TestCase):
         self.student.enroll(self.course1, "A")
         courses = self.student.get_courses()
         self.assertIn(self.course1, courses)
-
-class Student:
-    def __init__(self, student_id, name):
-        self.student_id = student_id
-        self.name = name
-
-class Course:
-    def __init__(self, course_code, credits):
-        self.course_code = course_code
-        self.credits = credits
-        self.students = []
 
 class UniversityTestCase(unittest.TestCase):
 
@@ -100,19 +87,19 @@ class UniversityTestCase(unittest.TestCase):
 
     def test_get_course_enrollment(self):
         course = self.uni.add_course("CSE3100", 2)
-        self.assertEqual(self.uni.get_course_enrollment("CSE3100"), 0)
 
         student1 = self.uni.add_student("STU00171", "Charlie")
         student2 = self.uni.add_student("STU00172", "Dana")
-        course.students.append(student1)
-        course.students.append(student2)
 
-        self.assertEqual(self.uni.get_course_enrollment("CHEM1010"), 3)
+        student1.enroll(course, "A")
+        student2.enroll(course, "B")
+
+        self.assertEqual(self.uni.get_course_enrollment("CSE3100"), 2)
 
     def test_get_students_in_course(self):
         course = self.uni.add_course("PHY1010", 3)
         student = self.uni.add_student("STU00019", "Eve")
-        course.students.append(student)
+        student.enroll(course, "A")
 
         students = self.uni.get_students_in_course("PHY1010")
         self.assertEqual(len(students), 1)
@@ -121,6 +108,7 @@ class UniversityTestCase(unittest.TestCase):
     def test_nonexistent_course(self):
         self.assertEqual(self.uni.get_course_enrollment("NONE"), 0)
         self.assertEqual(self.uni.get_students_in_course("NONE"), [])
+
 
 if __name__ == "__main__":
     unittest.main()
