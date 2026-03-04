@@ -50,7 +50,7 @@ class Student: #Mei Mei
                 total_credits += course.credits
 
         if total_credits == 0:
-            return 0.0
+            raise ValueError
 
         return total_points / total_credits
     
@@ -74,6 +74,7 @@ class Student: #Mei Mei
      
 class University: #Amani
     def __init__(self):
+        """stores all students and courses"""
         self.students = {}
         self.courses = {}
 
@@ -83,6 +84,8 @@ class University: #Amani
         return self.courses[course_code]
 
     def add_student(self, student_id, name):
+        if len(student_id) != 8:
+            raise ValueError("Id's are 8 character length")
         if student_id not in self.students:
             self.students[student_id] = Student(student_id, name)
         return self.students[student_id]
@@ -150,6 +153,11 @@ if __name__ == "__main__":
         print(student.name, "enrolled in:")
         for course, grade in student.courses.items():
             print("  ", course.course_code, "-", grade)
+
+    def demo(self):
+        """Demonstration of the program"""
+        with open("university_data.csv", newline="") as f:
+            reader = csv.reader(f)
 
             
 
