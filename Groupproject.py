@@ -1,5 +1,7 @@
+import csv
+
 class Course: #Amani
-    def __init__(self, course_code, credits, students):
+    def __init__(self, course_code, credits):
         """function representing a single course in the university catalog"""
         self.course_code = str(course_code)
         self.credits = int(credits)
@@ -33,7 +35,8 @@ class Student: #Mei Mei
             course.students.append(self)
     
     def update_grade(self, course, grade:str):
-        self.courses[course] = grade
+        if course not in self.courses:
+            self.courses[course] = grade
     
     def calculate_gpa(self):
         """Compute weighted GPA using course credits."""
@@ -54,15 +57,20 @@ class Student: #Mei Mei
     def get_courses(self):
         return list(self.courses.keys())
     
-    def get_course_info(self):
-        info = []
+    def get_course_info(self): 
+        table = []
+    
+        header = f"{'Course Code':<15}{'Credits':<10}{'Grade':<10}"
+        separator = "-" * 35
+    
+        table.append(header)
+        table.append(separator)
+
         for course, grade in self.courses.items():
-            info.append({
-                "course code": course.course.code,
-                "credits": course.credit,
-                "grade": grade
-            })
-        return info
+            row = f"{course.course_code:<15}{course.credits:<10}{grade:<10}"
+            table.append(row)
+
+        return "\n".join(table)
      
 class University: #Amani
     def __init__(self):
@@ -96,4 +104,52 @@ class University: #Amani
         if course is None:
             return []
         return list(course.students)
+    
+    #Mei Mei
+    """functions to open and read the csv files"""
+    def load_courses_csv(self):
+        with open("course_catalog.csv", mode = "r", newline="") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                course_code = row["course_code"]
+                credits = int(row["credits"])
+                self.add_course(course_code, credits)
+
+    def load_university_data_csv(self):
+        with open("university_data.csv", mode = "r", newline="") as file:
+            reader = csv.DictReader(file)
+
+            for row in reader:
+                student_id = row["student_id"]
+                name = row["name"]
+                courses_string = row["courses"]
+
+                student = self.add_student(student_id, name)
+
+                if courses_string:
+                    courses_pairs = courses_string.split(";")
+
+                    for pair in courses_pairs:
+                        course_code, grade = pair.split(":")
+
+                        course = self.get_course(course_code)
+
+                        if course:
+                            student.enroll(course, grade)
+
+if __name__ == "__main__":
+    uni = University()
+
+    uni.load_courses_csv()
+    uni.load_university_data_csv()
+
+    print("Total students:", len(uni.students))
+    print("Total courses:", len(uni.courses))
+
+    for student in uni.students.values():
+        print(student.name, "enrolled in:")
+        for course, grade in student.courses.items():
+            print("  ", course.course_code, "-", grade)
+
+            
 
