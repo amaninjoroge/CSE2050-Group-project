@@ -27,16 +27,19 @@ class Student: #Mei Mei
     }
     
     def __init__(self, student_id: str, name: str):
+        """initialize student id and name to student object"""
         self.student_id = student_id
         self.name = name
         self.courses = {}
 
     def enroll(self, course, grade:str): 
+        """ enrolls the student in a course with the givin grade and update course roster"""
         self.courses[course] = grade
         if self not in course.students:
             course.students.append(self)
     
     def update_grade(self, course, grade:str):
+        """modify  the student grade for a course"""
         if course in self.courses:
             self.courses[course] = grade
     
@@ -57,9 +60,11 @@ class Student: #Mei Mei
         return total_points / total_credits
     
     def get_courses(self):
+        """returns a list of course object taken by the student"""
         return list(self.courses.keys())
     
     def get_course_info(self): 
+        """ returns a structured summary of all enrollments"""
         table = []
     
         header = f"{'Course Code':<15}{'Credits':<10}{'Grade':<10}"
@@ -212,6 +217,7 @@ class University: #Amani
     #Mei Mei
     """functions to open and read the csv files"""
     def load_courses_csv(self):
+        """ open and reads course_catalog.csv """
         with open("course_catalog.csv", mode = "r", newline="") as file:
             reader = csv.DictReader(file)
             for row in reader:
@@ -220,6 +226,7 @@ class University: #Amani
                 self.add_course(course_code, credits)
 
     def load_university_data_csv(self):
+        """open and reads university_data.csv"""
         with open("university_data.csv", mode = "r", newline="") as file:
             reader = csv.DictReader(file)
 
