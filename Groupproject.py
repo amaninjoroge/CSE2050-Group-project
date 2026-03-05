@@ -255,7 +255,7 @@ if __name__ == "__main__": #Amani (demo)
         for course, grade in student.courses.items():
             print("  ", course.course_code, "-", grade)
 
-    course_code = "CSE101"
+    course_code = "CSE1010"
     students = uni.get_students_in_course(course_code)
 
     print("\nStudents enrolled in", course_code)
