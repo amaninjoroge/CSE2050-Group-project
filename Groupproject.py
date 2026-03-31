@@ -1,4 +1,15 @@
 import csv
+from datetime import date
+
+class EnrollmentRecord:
+    def __init__(self, student, enroll_date):
+        self.student = student
+        
+        if isinstance(enroll_date, str):
+            year, month, day = map(int, enroll_date.split("-"))
+            self.enroll_date = date(year, month, day)
+        else:
+            self.enroll_date = enroll_date
 
 class Course: #Amani
     def __init__(self, course_code, credits):
@@ -299,12 +310,12 @@ if __name__ == "__main__": #Amani (demo)
     for name in common:
         print(name)
 
-class Node:
+class Node: #Amani
     def __init__(self, data):
         self.data = data
         self.next = None
 
-class Queue:
+class Queue: #Amani
     def __init__(self):
         self.head = None  
         self.tail = None   
