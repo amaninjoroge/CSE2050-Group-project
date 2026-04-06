@@ -351,6 +351,81 @@ class Queue: #Amani
     def __len__(self):
         return self.size
     
+    class EnrollmentRecord: #Amani
+        def __init__(self, name, student_id, date):
+            self.name = name
+            self.student_id = student_id
+            self.date = date
+
+    def __str__(self):
+        return f"{self.name}, ID: {self.student_id}, Date: {self.date}"
+
+def get_key(record, by):
+    if by == 'name':
+        return record.name
+    elif by == 'id':
+        return record.student_id
+    elif by == 'date':
+        return record.date
+    else:
+        raise ValueError("Invalid sort key")
+
+def insertion_sort(arr, by):
+    for i in range(1, len(arr)):
+        current = arr[i]
+        j = i - 1
+        while j >= 0 and get_key(arr[j], by) > get_key(current, by):
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = current
+
+def selection_sort(arr, by):
+    n = len(arr)
+    for i in range(n):
+        min_index = i
+        for j in range(i + 1, n):
+            if get_key(arr[j], by) < get_key(arr[min_index], by):
+                min_index = j
+        arr[i], arr[min_index] = arr[min_index], arr[i]
+
+class Course:
+    def __init__(self):
+        self.enrolled = []
+        self.enrolled_sorted_by = None
+
+    def add_student(self, record):
+        self.enrolled.append(record)
+
+    def sort_enrolled(self, by, algorithm):
+        if algorithm == 'insertion':
+            insertion_sort(self.enrolled, by)
+        elif algorithm == 'selection':
+            selection_sort(self.enrolled, by)
+        else:
+            raise ValueError("Invalid sorting algorithm")
+        self.enrolled_sorted_by = by
+
+    def print_roster(self):
+        print(f"Roster sorted by: {self.enrolled_sorted_by}")
+        for record in self.enrolled:
+            print(record)
+
+if __name__ == "__main__":
+    course = Course()
+    course.add_student(EnrollmentRecord("Alice", 102, "2026-01-15"))
+    course.add_student(EnrollmentRecord("Bob", 101, "2026-01-12"))
+    course.add_student(EnrollmentRecord("Charlie", 103, "2026-01-14"))
+
+    course.sort_enrolled('name', 'insertion')
+    course.print_roster()
+    print()
+
+    course.sort_enrolled('id', 'selection')
+    course.print_roster()
+    print()
+
+    course.sort_enrolled('date', 'insertion')
+    course.print_roster()
 
 
 
