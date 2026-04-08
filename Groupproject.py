@@ -53,15 +53,17 @@ class Queue: #Amani
     def __len__(self):
         return self.size
 
-class Course: #Amani Mei Mei (task3)
+class Course: #Amani
     def __init__(self, course_code, credits, capacity):
         """function representing a single course in the university catalog"""
         self.course_code = str(course_code)
         self.credits = int(credits)
+        self.students = []
+        #Mei Mei for task 3 methods
         self.capacity = int(capacity)
         self.roster = []
         self.waitlist = Queue()
-        self.students = []
+        
 
         
     def add_student(self, student):
@@ -72,7 +74,7 @@ class Course: #Amani Mei Mei (task3)
         """returns the number of students currently enrolled"""
         return len(self.students)
     
-    def request_enroll(self, student, enroll_date):
+    def request_enroll(self, student, enroll_date): #Mei Mei
         """checks if already enrolled, if space advailable then enroll or add to waitlist if full"""
         for record in self.roster:
             if record.student == student:
@@ -85,7 +87,7 @@ class Course: #Amani Mei Mei (task3)
             self.waitlist.enqueue((student, enroll_date))
             print(f"{student.name} added to waitlist for {self.course_code}.")
 
-    def drop(self, student_id, enroll_date_for_replacement=None):
+    def drop(self, student_id, enroll_date_for_replacement=None): #Mei Mei
         """removes a student from the enrolled roster by student id"""
         removed = None
         for record in self.roster:
