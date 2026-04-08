@@ -1,7 +1,8 @@
 import csv
 from datetime import date
 
-class EnrollmentRecord:
+class EnrollmentRecord: #Mei Mei Task 1
+    """to represent enrollment in course"""
     def __init__(self, student, enroll_date):
         self.student = student
         
@@ -11,12 +12,58 @@ class EnrollmentRecord:
         else:
             self.enroll_date = enroll_date
 
-class Course: #Amani
-    def __init__(self, course_code, credits):
+class Node: #Amani
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+class Queue: #Amani
+    def __init__(self):
+        self.head = None  
+        self.tail = None   
+        self.size = 0
+
+    def enqueue(self, item):
+        new_node = Node(item)
+
+        if self.tail is None:      
+            self.head = self.tail = new_node
+        else:
+            self.tail.next = new_node
+            self.tail = new_node
+
+        self.size += 1
+
+    def dequeue(self):
+        if self.head is None:
+            raise ValueError("Queue is empty")
+
+        value = self.head.data
+        self.head = self.head.next
+
+        if self.head is None:      
+            self.tail = None
+
+        self.size -= 1
+        return value
+
+    def is_empty(self):
+        return self.size == 0
+
+    def __len__(self):
+        return self.size
+
+class Course: #Amani Mei Mei (task3)
+    def __init__(self, course_code, credits, capacity):
         """function representing a single course in the university catalog"""
         self.course_code = str(course_code)
         self.credits = int(credits)
+        self.capacity = int(capacity)
+        self.roster = []
+        self.waitlist = Queue()
         self.students = []
+
+        
     def add_student(self, student):
        """adds a student obkect to the course roster"""
        if student not in self.students:
@@ -24,6 +71,41 @@ class Course: #Amani
     def get_student_count(self):
         """returns the number of students currently enrolled"""
         return len(self.students)
+    
+    def request_enroll(self, student, enroll_date):
+        """checks if already enrolled, if space advailable then enroll or add to waitlist if full"""
+        for record in self.roster:
+            if record.student == student:
+                raise ValueError(f"{student.name} is already enrolled in {self.course_code}.")
+            
+        if len(self.roster) < self.capacity:
+            self.roster.append(EnrollmentRecord(student, enroll_date))
+            print(f"{student.name} enrolled in {self.course_code}.")
+        else:
+            self.waitlist.enqueue((student, enroll_date))
+            print(f"{student.name} added to waitlist for {self.course_code}.")
+
+    def drop(self, student_id, enroll_date_for_replacement=None):
+        """removes a student from the enrolled roster by student id"""
+        removed = None
+        for record in self.roster:
+            if record.student.student_id == student_id:
+                removed = record
+                break
+
+        if removed:
+            self.roster.remove(removed)
+            print(f"{removed.student.name} dropped from {self.course_code}.")
+        else:
+            print(f"Student ID {student_id} not found in {self.course_code}.")
+            return
+
+        if not self.waitlist.is_empty():
+            next_student, _ = self.waitlist.dequeue()
+            new_enroll_date = enroll_date_for_replacement or date.today()
+            self.request_enroll(next_student, new_enroll_date)
+
+
 
 
 class Student: #Mei Mei
@@ -96,10 +178,10 @@ class University: #Amani
         self.students = {}
         self.courses = {}
 
-    def add_course(self, course_code, credits):
+    def add_course(self, course_code, credits, capacity):
         """adds courses and returns them as objects"""
         if course_code not in self.courses:
-            self.courses[course_code] = Course(course_code, credits)
+            self.courses[course_code] = Course(course_code, credits, capacity)
         return self.courses[course_code]
 
     def add_student(self, student_id, name):
@@ -227,14 +309,6 @@ class University: #Amani
     
     #Mei Mei
     """functions to open and read the csv files"""
-    def load_courses_csv(self):
-        """ open and reads course_catalog.csv """
-        with open("course_catalog.csv", mode = "r", newline="") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                course_code = row["course_code"]
-                credits = int(row["credits"])
-                self.add_course(course_code, credits)
 
     def load_university_data_csv(self):
         """open and reads university_data.csv"""
@@ -258,11 +332,81 @@ class University: #Amani
 
                         if course:
                             student.enroll(course, grade)
+   
+    def load_courses_csv_with_capacity(self, filename="course_catalog_CSE10_with_capacity"):
+        """ open and reads course_catalog.csv """
+        with open(filename, mode="r", newline="") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                course_code = row["course_code"]
+                credits = int(row["credits"])
+                capacity = int(row["capacity"]) if "capacity" in row and row["capacity"] else 30
+            
+                self.add_course(course_code, credits, capacity)
 
-if __name__ == "__main__": #Amani (demo)
+class Record: #Amani
+        def __init__(self, name, student_id, date):
+            self.name = name
+            self.student_id = student_id
+            self.date = date
+
+        def __str__(self):
+            return f"{self.name}, ID: {self.student_id}, Date: {self.date}"
+
+def get_key(record, by):
+    if by == 'name':
+        return record.name
+    elif by == 'id':
+        return record.student_id
+    elif by == 'date':
+        return record.date
+    else:
+        raise ValueError("Invalid sort key")
+
+def insertion_sort(arr, by):
+    for i in range(1, len(arr)):
+        current = arr[i]
+        j = i - 1
+        while j >= 0 and get_key(arr[j], by) > get_key(current, by):
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = current
+
+def selection_sort(arr, by):
+    n = len(arr)
+    for i in range(n):
+        min_index = i
+        for j in range(i + 1, n):
+            if get_key(arr[j], by) < get_key(arr[min_index], by):
+                min_index = j
+        arr[i], arr[min_index] = arr[min_index], arr[i]
+
+class CourseWithSort:
+    def __init__(self):
+        self.enrolled = []
+        self.enrolled_sorted_by = None
+
+    def add_student(self, record):
+        self.enrolled.append(record)
+
+    def sort_enrolled(self, by, algorithm):
+        if algorithm == 'insertion':
+            insertion_sort(self.enrolled, by)
+        elif algorithm == 'selection':
+            selection_sort(self.enrolled, by)
+        else:
+            raise ValueError("Invalid sorting algorithm")
+        self.enrolled_sorted_by = by
+
+    def print_roster(self):
+        print(f"Roster sorted by: {self.enrolled_sorted_by}")
+        for record in self.enrolled:
+            print(record)
+    
+
+if __name__ == "__main__": #Amani (demo)  
 
     uni = University()
-    uni.load_courses_csv()
     uni.load_university_data_csv()
 
     print("Total students:", len(uni.students))
@@ -310,111 +454,10 @@ if __name__ == "__main__": #Amani (demo)
     for name in common:
         print(name)
 
-class Node: #Amani
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-
-class Queue: #Amani
-    def __init__(self):
-        self.head = None  
-        self.tail = None   
-        self.size = 0
-
-    def enqueue(self, item):
-        new_node = Node(item)
-
-        if self.tail is None:      
-            self.head = self.tail = new_node
-        else:
-            self.tail.next = new_node
-            self.tail = new_node
-
-        self.size += 1
-
-    def dequeue(self):
-        if self.head is None:
-            raise ValueError("Queue is empty")
-
-        value = self.head.data
-        self.head = self.head.next
-
-        if self.head is None:      
-            self.tail = None
-
-        self.size -= 1
-        return value
-
-    def is_empty(self):
-        return self.size == 0
-
-    def __len__(self):
-        return self.size
-    
-    class EnrollmentRecord: #Amani
-        def __init__(self, name, student_id, date):
-            self.name = name
-            self.student_id = student_id
-            self.date = date
-
-    def __str__(self):
-        return f"{self.name}, ID: {self.student_id}, Date: {self.date}"
-
-def get_key(record, by):
-    if by == 'name':
-        return record.name
-    elif by == 'id':
-        return record.student_id
-    elif by == 'date':
-        return record.date
-    else:
-        raise ValueError("Invalid sort key")
-
-def insertion_sort(arr, by):
-    for i in range(1, len(arr)):
-        current = arr[i]
-        j = i - 1
-        while j >= 0 and get_key(arr[j], by) > get_key(current, by):
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = current
-
-def selection_sort(arr, by):
-    n = len(arr)
-    for i in range(n):
-        min_index = i
-        for j in range(i + 1, n):
-            if get_key(arr[j], by) < get_key(arr[min_index], by):
-                min_index = j
-        arr[i], arr[min_index] = arr[min_index], arr[i]
-
-class Course:
-    def __init__(self):
-        self.enrolled = []
-        self.enrolled_sorted_by = None
-
-    def add_student(self, record):
-        self.enrolled.append(record)
-
-    def sort_enrolled(self, by, algorithm):
-        if algorithm == 'insertion':
-            insertion_sort(self.enrolled, by)
-        elif algorithm == 'selection':
-            selection_sort(self.enrolled, by)
-        else:
-            raise ValueError("Invalid sorting algorithm")
-        self.enrolled_sorted_by = by
-
-    def print_roster(self):
-        print(f"Roster sorted by: {self.enrolled_sorted_by}")
-        for record in self.enrolled:
-            print(record)
-
-if __name__ == "__main__":
-    course = Course()
-    course.add_student(EnrollmentRecord("Alice", 102, "2026-01-15"))
-    course.add_student(EnrollmentRecord("Bob", 101, "2026-01-12"))
-    course.add_student(EnrollmentRecord("Charlie", 103, "2026-01-14"))
+    course = CourseWithSort()
+    course.add_student(Record("Alice", 102, "2026-01-15"))
+    course.add_student(Record("Bob", 101, "2026-01-12"))
+    course.add_student(Record("Charlie", 103, "2026-01-14"))
 
     course.sort_enrolled('name', 'insertion')
     course.print_roster()
