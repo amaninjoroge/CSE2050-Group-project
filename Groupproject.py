@@ -75,14 +75,18 @@ def recursive_binary_search(records, target_id, low, high):
     else:
         return recursive_binary_search(records, target_id, mid + 1, high)
 
-class Stack: #Mei Mei extra cred
+class Stack: #Mei Mei extra credit
+    """Stack ADT to add an undo feature """
     def __init__(self):
+        
         self._data = []
 
     def push(self, item):
+        """add the action"""
         self._data.append(item)
     
     def pop(self):
+        """remove action"""
         if not self._data:
             raise ValueError("Nothing to undo")
         return self._data.pop()
@@ -112,9 +116,11 @@ class Course: #Amani
         return len(self.students)
     
     def is_enrolled(self, student): #Mei Mei extra credit
+        """return student is enrolled"""
         return any(record.student == student for record in self.roster)
 
     def is_waitlisted(self, student): #Mei extra credit
+        """check if student is waitlisted"""
         current = self.waitlist.head
         
         while current:
@@ -127,6 +133,7 @@ class Course: #Amani
     def request_enroll(self, student, enroll_date): #Mei Mei
         """checks if already enrolled, if space advailable then enroll or add to waitlist if full"""
         if self.is_enrolled(student):
+            
             raise ValueError(f"{student.name} is already enrolled in {self.course_code}.")
 
         if self.is_waitlisted(student):
@@ -164,6 +171,7 @@ class Course: #Amani
             self.request_enroll(next_student, new_enroll_date)
     
     def undo(self): #Mei Mei extra credit
+        """Method to undo action"""
         if self.history.is_empty():
             print("No actions to undo.")
             return
@@ -425,12 +433,12 @@ class University: #Amani
                 self.add_course(course_code, credits, capacity)
 
 class Record: #Amani
-        def __init__(self, name, student_id, date):
+    def __init__(self, name, student_id, date):
             self.name = name
             self.student_id = student_id
             self.date = date
 
-        def __str__(self):
+    def __str__(self):
             return f"{self.name}, ID: {self.student_id}, Date: {self.date}"
 
 def get_key(record, by):
