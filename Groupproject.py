@@ -61,6 +61,7 @@ class Queue: #Amani
     
     # Mei Mei Task 5
 def recursive_binary_search(records, target_id, low, high):
+    """binary search to find a student by ID"""
     if low > high:
         return -1
     
