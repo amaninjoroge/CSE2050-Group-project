@@ -1,0 +1,7 @@
+LinkedQueue runs in O(1) time since both enqueue and dequeue
+run in O(1) time. Insertion sort has an O(n^2) time complexity
+in the worst and average case but runs O(n) in the best case.
+Selection sort runs in O(n^2) complexity in all cases.
+Binary search tine runs in O(nlogn) time. Insertion sort is preferred 
+for small sets of data. Selection sort is not as efficient because
+it has a consistent performance time no matter the input side.

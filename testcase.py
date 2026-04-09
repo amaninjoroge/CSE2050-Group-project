@@ -1,5 +1,6 @@
 import unittest
-from Groupproject import Course, Student, University
+from datetime import date
+from Groupproject import Course, Student, University, Queue, Course, Student, Record, insertion_sort, selection_sort
 
 class TestCourse(unittest.TestCase):
 
@@ -109,6 +110,133 @@ class UniversityTestCase(unittest.TestCase):
         self.assertEqual(self.uni.get_course_enrollment("NONE"), 0)
         self.assertEqual(self.uni.get_students_in_course("NONE"), [])
 
+class TestQueue(unittest.TestCase):
+
+    def test_fifo_order(self):
+        q = Queue()
+        q.enqueue(1)
+        q.enqueue(2)
+        q.enqueue(3)
+
+        self.assertEqual(q.dequeue(), 1)
+        self.assertEqual(q.dequeue(), 2)
+        self.assertEqual(q.dequeue(), 3)
+
+    def test_dequeue_empty_raises(self):
+        q = Queue()
+        with self.assertRaises(ValueError):
+            q.dequeue()
+
+    def test_size_tracking(self):
+        q = Queue()
+        self.assertEqual(len(q), 0)
+        q.enqueue(10)
+        q.enqueue(20)
+        self.assertEqual(len(q), 2)
+        q.dequeue()
+        self.assertEqual(len(q), 1)
+
+
+class TestEnrollment(unittest.TestCase):
+
+    def setUp(self):
+        self.course = Course("CSE2000", 3, 2)
+        self.s1 = Student("STU00001", "Alice")
+        self.s2 = Student("STU00002", "Bob")
+        self.s3 = Student("STU00003", "Charlie")
+
+    def test_enroll_until_capacity(self):
+        self.course.request_enroll(self.s1, "2026-01-01")
+        self.course.request_enroll(self.s2, "2026-01-02")
+        self.assertEqual(len(self.course.roster), 2)
+
+    def test_waitlist_when_full(self):
+        self.course.request_enroll(self.s1, "2026-01-01")
+        self.course.request_enroll(self.s2, "2026-01-02")
+        self.course.request_enroll(self.s3, "2026-01-03")
+
+        self.assertEqual(len(self.course.roster), 2)
+        self.assertEqual(len(self.course.waitlist), 1)
+
+    def test_drop_promotes_waitlist(self):
+        self.course.request_enroll(self.s1, "2026-01-01")
+        self.course.request_enroll(self.s2, "2026-01-02")
+        self.course.request_enroll(self.s3, "2026-01-03")
+
+        self.course.drop("STU00001", date(2026, 1, 5))
+
+        ids = [r.student.student_id for r in self.course.roster]
+        self.assertEqual(len(self.course.roster), 2)
+        self.assertIn("STU00003", ids)
+
+
+class TestSorting(unittest.TestCase):
+
+    def setUp(self):
+        self.records = [
+            Record("Charlie", 103, "2026-01-14"),
+            Record("Alice", 102, "2026-01-15"),
+            Record("Bob", 101, "2026-01-12")
+        ]
+
+    def test_insertion_sort_by_id(self):
+        insertion_sort(self.records, 'id')
+        ids = [r.student_id for r in self.records]
+        self.assertEqual(ids, [101, 102, 103])
+
+    def test_selection_sort_by_name(self):
+        selection_sort(self.records, 'name')
+        names = [r.name for r in self.records]
+        self.assertEqual(names, ["Alice", "Bob", "Charlie"])
+
+    def test_sort_by_date(self):
+        insertion_sort(self.records, 'date')
+        dates = [r.date for r in self.records]
+        self.assertEqual(dates, ["2026-01-12", "2026-01-14", "2026-01-15"])
+
+
+class TestBinarySearch(unittest.TestCase):
+
+    def binary_search(self, arr, target):
+        left, right = 0, len(arr) - 1
+        while left <= right:
+            mid = (left + right) // 2
+            if arr[mid].student_id == target:
+                return mid
+            elif arr[mid].student_id < target:
+                left = mid + 1
+            else:
+                right = mid - 1
+        return -1
+
+    def setUp(self):
+        self.records = [
+            Record("A", 100, "2026-01-01"),
+            Record("B", 101, "2026-01-02"),
+            Record("C", 102, "2026-01-03"),
+            Record("D", 103, "2026-01-04")
+        ]
+
+    def test_find_first(self):
+        self.assertEqual(self.binary_search(self.records, 100), 0)
+
+    def test_find_middle(self):
+        self.assertEqual(self.binary_search(self.records, 102), 2)
+
+    def test_find_last(self):
+        self.assertEqual(self.binary_search(self.records, 103), 3)
+
+    def test_not_found(self):
+        self.assertEqual(self.binary_search(self.records, 999), -1)
+
+    def test_unsorted_behavior(self):
+        unsorted_records = [
+            Record("C", 102, "2026-01-03"),
+            Record("A", 100, "2026-01-01"),
+            Record("B", 101, "2026-01-02"),
+        ]
+        result = self.binary_search(unsorted_records, 100)
+        self.assertNotEqual(result, 1)
 
 if __name__ == "__main__":
     unittest.main()
