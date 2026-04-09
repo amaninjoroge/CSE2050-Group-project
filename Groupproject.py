@@ -58,6 +58,23 @@ class Queue: #Amani
     def __len__(self):
         """retuns the number of students"""
         return self.size
+    
+    # Mei Mei Task 5
+def recursive_binary_search(records, target_id, low, high):
+    if low > high:
+        return -1
+    
+    mid = (low + high) // 2 
+    mid_id = records[mid].student.student_id
+
+    if mid_id == target_id:
+        return mid
+    elif target_id < mid_id:
+        return recursive_binary_search(records, target_id, low, mid - 1)
+    else:
+        return recursive_binary_search(records, target_id, mid + 1, high)
+
+
 
 class Course: #Amani
     def __init__(self, course_code, credits, capacity):
@@ -95,18 +112,16 @@ class Course: #Amani
 
     def drop(self, student_id, enroll_date_for_replacement=None): #Mei Mei
         """removes a student from the enrolled roster by student id"""
-        removed = None
-        for record in self.roster:
-            if record.student.student_id == student_id:
-                removed = record
-                break
-
-        if removed:
-            self.roster.remove(removed)
-            print(f"{removed.student.name} dropped from {self.course_code}.")
-        else:
+        self.roster.sort(key=lambda r: r.student.student_id)
+        
+        index = recursive_binary_search(self.roster, student_id, 0, len(self.roster) - 1)
+        
+        if index == -1:
             print(f"Student ID {student_id} not found in {self.course_code}.")
             return
+            
+        removed = self.roster.pop(index)
+        print(f"{removed.student.name} dropped from {self.course_code}.")
 
         if not self.waitlist.is_empty():
             next_student, _ = self.waitlist.dequeue()
@@ -389,7 +404,7 @@ def selection_sort(arr, by):
                 min_index = j
         arr[i], arr[min_index] = arr[min_index], arr[i]
 
-class CourseWithSort: #Amani
+class CourseWithSort:
     def __init__(self):
         """Sorting the enrolled roster"""
         self.enrolled = []
@@ -420,6 +435,7 @@ if __name__ == "__main__": #Amani (demo)
 
     uni = University()
     uni.load_university_data_csv()
+    uni.load_courses_csv_with_capacity()
 
     print("Total students:", len(uni.students))
     print("Total courses:", len(uni.courses))
