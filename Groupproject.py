@@ -14,16 +14,19 @@ class EnrollmentRecord: #Mei Mei Task 1
 
 class Node: #Amani
     def __init__(self, data):
+        """Node class for waitlist"""
         self.data = data
         self.next = None
 
 class Queue: #Amani
     def __init__(self):
+        """Queue for waitlist"""
         self.head = None  
         self.tail = None   
         self.size = 0
 
     def enqueue(self, item):
+        """Adds students to the back of the waitlist"""
         new_node = Node(item)
 
         if self.tail is None:      
@@ -35,6 +38,7 @@ class Queue: #Amani
         self.size += 1
 
     def dequeue(self):
+        """removing students from the front of the waitlist"""
         if self.head is None:
             raise ValueError("Queue is empty")
 
@@ -48,9 +52,11 @@ class Queue: #Amani
         return value
 
     def is_empty(self):
+        """checking if the list is empty"""
         return self.size == 0
 
     def __len__(self):
+        """retuns the number of students"""
         return self.size
 
 class Course: #Amani
@@ -385,13 +391,16 @@ def selection_sort(arr, by):
 
 class CourseWithSort: #Amani
     def __init__(self):
+        """Sorting the enrolled roster"""
         self.enrolled = []
         self.enrolled_sorted_by = None
 
     def add_student(self, record):
+        """adds students to the roster"""
         self.enrolled.append(record)
 
     def sort_enrolled(self, by, algorithm):
+        """sorting the enrolled students using insertion and selection"""
         if algorithm == 'insertion':
             insertion_sort(self.enrolled, by)
         elif algorithm == 'selection':
@@ -401,6 +410,7 @@ class CourseWithSort: #Amani
         self.enrolled_sorted_by = by
 
     def print_roster(self):
+        """prints the sorted roster"""
         print(f"Roster sorted by: {self.enrolled_sorted_by}")
         for record in self.enrolled:
             print(record)
