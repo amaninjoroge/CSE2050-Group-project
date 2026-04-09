@@ -74,7 +74,20 @@ def recursive_binary_search(records, target_id, low, high):
     else:
         return recursive_binary_search(records, target_id, mid + 1, high)
 
+class Stack: #Mei Mei extra cred
+    def __init__(self):
+        self._data = []
 
+    def push(self, item):
+        self._data.append(item)
+    
+    def pop(self):
+        if not self._data:
+            raise ValueError("Nothing to undo")
+        return self._data.pop()
+    
+    def is_empty(self):
+        return len(self._data) == 0 
 
 class Course: #Amani
     def __init__(self, course_code, credits, capacity):
@@ -86,8 +99,8 @@ class Course: #Amani
         self.capacity = int(capacity)
         self.roster = []
         self.waitlist = Queue()
+        self.history = Stack() # Mei Extra cred
         
-
         
     def add_student(self, student):
        """adds a student obkect to the course roster"""
@@ -97,14 +110,32 @@ class Course: #Amani
         """returns the number of students currently enrolled"""
         return len(self.students)
     
+    def is_enrolled(self, student): #Mei Mei extra credit
+        return any(record.student == student for record in self.roster)
+
+    def is_waitlisted(self, student): #Mei extra credit
+        current = self.waitlist.head
+        
+        while current:
+            if current.data[0] == student: 
+                return True
+            current = current.next
+        return False
+    
+    
     def request_enroll(self, student, enroll_date): #Mei Mei
         """checks if already enrolled, if space advailable then enroll or add to waitlist if full"""
-        for record in self.roster:
-            if record.student == student:
-                raise ValueError(f"{student.name} is already enrolled in {self.course_code}.")
-            
+        if self.is_enrolled(student):
+            raise ValueError(f"{student.name} is already enrolled in {self.course_code}.")
+
+        if self.is_waitlisted(student):
+            raise ValueError(f"{student.name} is already waitlisted for {self.course_code}.")
+
         if len(self.roster) < self.capacity:
-            self.roster.append(EnrollmentRecord(student, enroll_date))
+            record = EnrollmentRecord(student, enroll_date)
+            self.roster.append(record)
+            self.students.append(student)
+            self.history.push(("enroll", record))  
             print(f"{student.name} enrolled in {self.course_code}.")
         else:
             self.waitlist.enqueue((student, enroll_date))
@@ -120,13 +151,38 @@ class Course: #Amani
             print(f"Student ID {student_id} not found in {self.course_code}.")
             return
             
+
         removed = self.roster.pop(index)
+        self.students.remove(removed.student)
+        self.history.push(("drop", removed))
         print(f"{removed.student.name} dropped from {self.course_code}.")
 
         if not self.waitlist.is_empty():
             next_student, _ = self.waitlist.dequeue()
             new_enroll_date = enroll_date_for_replacement or date.today()
             self.request_enroll(next_student, new_enroll_date)
+    
+    def undo(self): #Mei Mei extra credit
+        if self.history.is_empty():
+            print("No actions to undo.")
+            return
+
+        action, record = self.history.pop()
+        if action == "enroll":
+            self.roster = [r for r in self.roster if r.student != record.student]
+            if record.student in self.students:
+                self.students.remove(record.student)
+            print(f"Undo: removed {record.student.name} from {self.course_code}")
+
+        elif action == "drop":
+            if len(self.roster) < self.capacity:
+                self.roster.append(record)
+                self.students.append(record.student)
+                print(f"Undo: re-enrolled {record.student.name} in {self.course_code}")
+            else:
+                self.waitlist.enqueue((record.student, record.enroll_date))
+                print(f"Undo: waitlisted {record.student.name} (course full)")
+        
 
 
 
@@ -356,7 +412,7 @@ class University: #Amani
                         if course:
                             student.enroll(course, grade)
    
-    def load_courses_csv_with_capacity(self, filename="course_catalog_CSE10_with_capacity"):
+    def load_courses_csv_with_capacity(self, filename="course_catalog_CSE10_with_capacity.csv"):
         """ open and reads course_catalog.csv """
         with open(filename, mode="r", newline="") as file:
             reader = csv.DictReader(file)
@@ -434,8 +490,9 @@ class CourseWithSort:
 if __name__ == "__main__": #Amani (demo)  
 
     uni = University()
-    uni.load_university_data_csv()
     uni.load_courses_csv_with_capacity()
+    uni.load_university_data_csv()
+    
 
     print("Total students:", len(uni.students))
     print("Total courses:", len(uni.courses))
