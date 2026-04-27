@@ -76,9 +76,8 @@ def recursive_binary_search(records, target_id, low, high):
         return recursive_binary_search(records, target_id, mid + 1, high)
 
 class Stack: #Mei Mei extra credit
-    """Stack ADT to add an undo feature """
     def __init__(self):
-        
+        """Stack ADT to add an undo feature """
         self._data = []
 
     def push(self, item):
@@ -433,15 +432,18 @@ class University: #Amani
                 self.add_course(course_code, credits, capacity)
 
 class Record: #Amani
+    """records the name, student id and date enrolled"""
     def __init__(self, name, student_id, date):
             self.name = name
             self.student_id = student_id
             self.date = date
 
     def __str__(self):
+            """returns name, id, and date"""
             return f"{self.name}, ID: {self.student_id}, Date: {self.date}"
 
 def get_key(record, by):
+    """gets a specific student's name, record, and date"""
     if by == 'name':
         return record.name
     elif by == 'id':
@@ -452,6 +454,7 @@ def get_key(record, by):
         raise ValueError("Invalid sort key")
 
 def insertion_sort(arr, by):
+    """sorts students in the roster using insertion sort"""
     for i in range(1, len(arr)):
         current = arr[i]
         j = i - 1
@@ -461,6 +464,7 @@ def insertion_sort(arr, by):
         arr[j + 1] = current
 
 def selection_sort(arr, by):
+    """sorts students by using selection sort"""
     n = len(arr)
     for i in range(n):
         min_index = i

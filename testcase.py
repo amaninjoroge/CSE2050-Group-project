@@ -1,8 +1,8 @@
-import unittest
+import unittest 
 from datetime import date
 from Groupproject import Course, Student, University, Queue, Course, Student, Record, insertion_sort, selection_sort
 
-class TestCourse(unittest.TestCase):
+class TestCourse(unittest.TestCase): 
 
     def setUp(self):
         self.course = Course("CSE1010", 3)
