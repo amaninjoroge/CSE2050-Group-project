@@ -568,9 +568,36 @@ if __name__ == "__main__": #Amani (demo)
     course.sort_enrolled('date', 'insertion')
     course.print_roster()
 
-    #Nana
+#Nana
+class Hashmap:
+    def __init__(self, size ):
+        self.size = size
+        self._buckets = [ListMapping()] * self._size
 
+    def __setitem__(self, key, value):
+        m = self._bucket(key)
+        m[key] = value
 
+    def hash(self, key, value):
+        self.key = key
+        self.value = value
+        return hash(key)% self.bucket
+    
+    def __get_max__(self,key):
+        m = self._bucket(key)
+        if self.key/self.table >= 0.8:
+            self._rehash()
+        return m[key]
 
-            
+#Rehashing buckets if limit is >= .8
+    def _rehash(self):
+        old_buckets = self.bucket
+        self._size *= 2
 
+# Create new buckets
+        self._buckets = [ListMapping()] * self._size
+        for bucket in old_buckets:
+            for key, value in bucket.items():
+                m = self._bucket(key)
+                m[key] = value
+   
