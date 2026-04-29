@@ -59,7 +59,6 @@ class Queue: #Amani
         """retuns the number of students"""
         return self.size
     
-    # Mei Mei Task 5
 def recursive_binary_search(records, target_id, low, high):
     """binary search to find a student by ID"""
     if low > high:
@@ -93,6 +92,65 @@ class Stack: #Mei Mei extra credit
     def is_empty(self):
         return len(self._data) == 0 
 
+#Nana
+class Hashmap:
+    def __init__(self, size ):
+        self.size = size
+        self._buckets = [[] for _ in range(self.size)]
+
+    def _bucket(self, key):
+        return self._buckets[hash(key) % self.size]
+
+    def __setitem__(self, key, value):
+        bucket = self._bucket(key)
+        for i, (k, v) in enumerate(bucket):
+            if k == key:
+                bucket[i] = (key, value)
+                return
+        bucket.append((key, value))
+
+    def __getitem__(self, key):
+        bucket = self._bucket(key)
+        for k, v in bucket:
+            if k == key:
+                return v
+        raise KeyError(key)
+
+    def keys(self):
+        for bucket in self._buckets:
+            for k, _ in bucket:
+                yield k
+
+def merge(left, right, by):
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if get_key(left[i], by) <= get_key(right[j], by):
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+def merge_sort(arr, by):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr)//2
+    left = merge_sort(arr[:mid], by)
+    right = merge_sort(arr[mid:], by)
+    return merge(left, right, by)
+
+def quick_sort(arr, by):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[0]
+    less = [x for x in arr[1:] if get_key(x, by) <= get_key(pivot, by)]
+    greater = [x for x in arr[1:] if get_key(x, by) > get_key(pivot, by)]
+    return quick_sort(less, by) + [pivot] + quick_sort(greater, by)
+
 class Course: #Amani
     def __init__(self, course_code, credits, capacity):
         """function representing a single course in the university catalog"""
@@ -104,12 +162,13 @@ class Course: #Amani
         self.roster = []
         self.waitlist = Queue()
         self.history = Stack() # Mei Extra cred
-        
+        self.prerequisites = Hashmap(10)
         
     def add_student(self, student):
        """adds a student obkect to the course roster"""
        if student not in self.students:
             self.students.append(student)
+
     def get_student_count(self):
         """returns the number of students currently enrolled"""
         return len(self.students)
@@ -118,7 +177,7 @@ class Course: #Amani
         """return student is enrolled"""
         return any(record.student == student for record in self.roster)
 
-    def is_waitlisted(self, student): #Mei extra credit
+    def is_waitlisted(self, student): #Mei Mei extra credit
         """check if student is waitlisted"""
         current = self.waitlist.head
         
@@ -128,11 +187,16 @@ class Course: #Amani
             current = current.next
         return False
     
-    
     def request_enroll(self, student, enroll_date): #Mei Mei
         """checks if already enrolled, if space advailable then enroll or add to waitlist if full"""
+
+        student_completed = [c.course_code for c in student.courses]
+
+        for prereq in self.prerequisites.keys():
+            if prereq not in student_completed:
+                raise ValueError(f"{student.name} does not meet prerequisites for {self.course_code}.")
+
         if self.is_enrolled(student):
-            
             raise ValueError(f"{student.name} is already enrolled in {self.course_code}.")
 
         if self.is_waitlisted(student):
@@ -150,14 +214,13 @@ class Course: #Amani
 
     def drop(self, student_id, enroll_date_for_replacement=None): #Mei Mei
         """removes a student from the enrolled roster by student id"""
-        self.roster.sort(key=lambda r: r.student.student_id)
+        self.roster = quick_sort(self.roster, 'id')
         
         index = recursive_binary_search(self.roster, student_id, 0, len(self.roster) - 1)
         
         if index == -1:
             print(f"Student ID {student_id} not found in {self.course_code}.")
             return
-            
 
         removed = self.roster.pop(index)
         self.students.remove(removed.student)
@@ -190,10 +253,6 @@ class Course: #Amani
             else:
                 self.waitlist.enqueue((record.student, record.enroll_date))
                 print(f"Undo: waitlisted {record.student.name} (course full)")
-        
-
-
-
 
 class Student: #Mei Mei
     """A class to respresent an student and their courses with grades"""
@@ -258,7 +317,7 @@ class Student: #Mei Mei
             table.append(row)
 
         return "\n".join(table)
-     
+
 class University: #Amani
     def __init__(self):
         """stores all students and courses"""
@@ -377,8 +436,6 @@ class University: #Amani
             median = (gpas[n//2 - 1] + gpas[n//2]) / 2
         return {"mean": mean, "median": median}
     
-    
-    
     def common_students(self, course_code1, course_code2):
         """returns common students in two different courses"""
         course1 = self.get_course(course_code1)
@@ -391,11 +448,6 @@ class University: #Amani
 
         common = students1.intersection(students2)
         return [student.name for student in common]
-
-
-    
-    #Mei Mei
-    """functions to open and read the csv files"""
 
     def load_university_data_csv(self):
         """open and reads university_data.csv"""
@@ -431,6 +483,19 @@ class University: #Amani
             
                 self.add_course(course_code, credits, capacity)
 
+    def load_prerequisites_csv(self, filename="cse_prerequisites.csv"):
+        with open(filename, mode="r", newline="") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                course_code = row["course_code"]
+                prereqs = row["prerequisite"]
+
+                course = self.get_course(course_code)
+
+                if course and prereqs:
+                    for prereq in prereqs.split(";"):
+                        course.prerequisites[prereq] = True
+
 class Record: #Amani
     """records the name, student id and date enrolled"""
     def __init__(self, name, student_id, date):
@@ -453,25 +518,35 @@ def get_key(record, by):
     else:
         raise ValueError("Invalid sort key")
 
-def insertion_sort(arr, by):
-    """sorts students in the roster using insertion sort"""
-    for i in range(1, len(arr)):
-        current = arr[i]
-        j = i - 1
-        while j >= 0 and get_key(arr[j], by) > get_key(current, by):
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = current
+def merge(left, right, by):
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if get_key(left[i], by) <= get_key(right[j], by):
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
 
-def selection_sort(arr, by):
-    """sorts students by using selection sort"""
-    n = len(arr)
-    for i in range(n):
-        min_index = i
-        for j in range(i + 1, n):
-            if get_key(arr[j], by) < get_key(arr[min_index], by):
-                min_index = j
-        arr[i], arr[min_index] = arr[min_index], arr[i]
+def merge_sort(arr, by):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr)//2
+    left = merge_sort(arr[:mid], by)
+    right = merge_sort(arr[mid:], by)
+    return merge(left, right, by)
+
+def quick_sort(arr, by):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[0]
+    less = [x for x in arr[1:] if get_key(x, by) <= get_key(pivot, by)]
+    greater = [x for x in arr[1:] if get_key(x, by) > get_key(pivot, by)]
+    return quick_sort(less, by) + [pivot] + quick_sort(greater, by)
 
 class CourseWithSort:
     def __init__(self):
@@ -485,10 +560,10 @@ class CourseWithSort:
 
     def sort_enrolled(self, by, algorithm):
         """sorting the enrolled students using insertion and selection"""
-        if algorithm == 'insertion':
-            insertion_sort(self.enrolled, by)
-        elif algorithm == 'selection':
-            selection_sort(self.enrolled, by)
+        if algorithm == 'merge':
+            self.enrolled = merge_sort(self.enrolled, by)
+        elif algorithm == 'quick':
+            self.enrolled = quick_sort(self.enrolled, by)
         else:
             raise ValueError("Invalid sorting algorithm")
         self.enrolled_sorted_by = by
@@ -498,106 +573,6 @@ class CourseWithSort:
         print(f"Roster sorted by: {self.enrolled_sorted_by}")
         for record in self.enrolled:
             print(record)
-    
 
-if __name__ == "__main__": #Amani (demo)  
 
-    uni = University()
-    uni.load_courses_csv_with_capacity()
-    uni.load_university_data_csv()
-    
-
-    print("Total students:", len(uni.students))
-    print("Total courses:", len(uni.courses))
-
-    for student in uni.students.values():
-        print(student.name, "enrolled in:")
-        for course, grade in student.courses.items():
-            print("  ", course.course_code, "-", grade)
-
-    course_code = "CSE1010"
-    students = uni.get_students_in_course(course_code)
-
-    print("\nStudents enrolled in", course_code)
-    for s in students:
-        print(s.name)
-
-    student_id = list(uni.students.keys())[0]
-    student = uni.get_student(student_id)
-
-    print("\nGPA of", student.name, ":", student.calculate_gpa())
-
-    print("\nCourses for", student.name)
-    print(student.get_course_info())
-
-    stats = uni.course_grade_stats(course_code)
-
-    print("\nGrade statistics for", course_code)
-    print("Mean:", stats["mean"])
-    print("Median:", stats["median"])
-    print("Mode:", stats["mode"])
-
-    gpa_stats = uni.university_gpa_stats()
-
-    print("\nUniversity GPA statistics")
-    print("Mean GPA:", gpa_stats["mean"])
-    print("Median GPA:", gpa_stats["median"])
-
-    course1 = "CSE1010"
-    course2 = "CSE2050"
-
-    common = uni.common_students(course1, course2)
-
-    print("\nCommon students in", course1, "and", course2)
-    for name in common:
-        print(name)
-
-    course = CourseWithSort()
-    course.add_student(Record("Alice", 102, "2026-01-15"))
-    course.add_student(Record("Bob", 101, "2026-01-12"))
-    course.add_student(Record("Charlie", 103, "2026-01-14"))
-
-    course.sort_enrolled('name', 'insertion')
-    course.print_roster()
-    print()
-
-    course.sort_enrolled('id', 'selection')
-    course.print_roster()
-    print()
-
-    course.sort_enrolled('date', 'insertion')
-    course.print_roster()
-
-#Nana
-class Hashmap:
-    def __init__(self, size ):
-        self.size = size
-        self._buckets = [ListMapping()] * self._size
-
-    def __setitem__(self, key, value):
-        m = self._bucket(key)
-        m[key] = value
-
-    def hash(self, key, value):
-        self.key = key
-        self.value = value
-        return hash(key)% self.bucket
-    
-    def __get_max__(self,key):
-        m = self._bucket(key)
-        if self.key/self.table >= 0.8:
-            self._rehash()
-        return m[key]
-
-#Rehashing buckets if limit is >= .8
-    def _rehash(self):
-        old_buckets = self.bucket
-        self._size *= 2
-
-# Create new buckets
-        self._buckets = [ListMapping()] * self._size
-        for bucket in old_buckets:
-            for key, value in bucket.items():
-                m = self._bucket(key)
-                m[key] = value
    
