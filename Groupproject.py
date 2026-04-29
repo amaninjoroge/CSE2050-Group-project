@@ -118,7 +118,7 @@ class Hashmap:
 
     def keys(self):
         for bucket in self._buckets:
-            for k, _ in bucket:
+            for k in bucket:
                 yield k
 
 def merge(left, right, by):
