@@ -187,7 +187,7 @@ class Course: #Amani
             current = current.next
         return False
     
-    def request_enroll(self, student, enroll_date): #Mei Mei
+    def request_enroll(self, student, enroll_date): #Mei Mei/ Amani Task 3
         """checks if already enrolled, if space advailable then enroll or add to waitlist if full"""
 
         student_completed = [c.course_code for c in student.courses]
@@ -482,7 +482,7 @@ class University: #Amani
                 capacity = int(row["capacity"]) if "capacity" in row and row["capacity"] else 30
             
                 self.add_course(course_code, credits, capacity)
-
+        #Amani
     def load_prerequisites_csv(self, filename="cse_prerequisites.csv"):
         with open(filename, mode="r", newline="") as file:
             reader = csv.DictReader(file)
